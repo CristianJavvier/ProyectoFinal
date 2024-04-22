@@ -1,134 +1,7 @@
 import java.util.*;
 
-// Clase que representa una ubicación
-class Ubicacion {
-    private String nombre;
-    private double latitud;
-    private double longitud;
-    
-    public Ubicacion(String nombre, double latitud, double longitud) {
-        this.nombre = nombre;
-        this.latitud = latitud;
-        this.longitud = longitud;
-    }
-    
-    // Getters y setters
-    public String getNombre() {
-        return nombre;
-    }
-    
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-    
-    public double getLatitud() {
-        return latitud;
-    }
-    
-    public void setLatitud(double latitud) {
-        this.latitud = latitud;
-    }
-    
-    public double getLongitud() {
-        return longitud;
-    }
-    
-    public void setLongitud(double longitud) {
-        this.longitud = longitud;
-    }
-}
 
-// Clase que representa un nodo en el grafo
-class Nodo {
-    private Ubicacion ubicacion;
-    private List<Arista> aristas;
-    private Grafo grafo; // Referencia al grafo al que pertenece el nodo
-    
-    public Nodo(Grafo grafo, Ubicacion ubicacion) {
-        this.ubicacion = ubicacion;
-        this.aristas = new ArrayList<>();
-        this.grafo = grafo;
-    }
-    
-    // Métodos para agregar y obtener aristas
-    public void agregarArista(Nodo destino, double distancia) {
-        Arista arista = new Arista(this, destino, distancia);
-        aristas.add(arista);
-    }
-    
-    public List<Arista> obtenerAristas() {
-        return aristas;
-    }
-    
-    // Getter para obtener la ubicación del nodo
-    public Ubicacion getUbicacion() {
-        return ubicacion;
-    }
-    
-    // Getter para obtener el grafo al que pertenece el nodo
-    public Grafo getGrafo() {
-        return grafo;
-    }
-}
-
-// Clase que representa una arista en el grafo
-class Arista {
-    private Nodo origen;
-    private Nodo destino;
-    private double distancia;
-    
-    public Arista(Nodo origen, Nodo destino, double distancia) {
-        this.origen = origen;
-        this.destino = destino;
-        this.distancia = distancia;
-    }
-    
-    // Getters para obtener origen, destino y distancia de la arista
-    public Nodo getOrigen() {
-        return origen;
-    }
-    
-    public Nodo getDestino() {
-        return destino;
-    }
-    
-    public double getDistancia() {
-        return distancia;
-    }
-}
-
-// Clase que representa un grafo
-class Grafo {
-    private List<Nodo> nodos;
-    private List<Arista> aristas;
-    
-    public Grafo() {
-        this.nodos = new ArrayList<>();
-        this.aristas = new ArrayList<>();
-    }
-    
-    // Métodos para agregar nodos y aristas al grafo
-    public void agregarNodo(Nodo nodo) {
-        nodos.add(nodo);
-    }
-    
-    public void agregarArista(Nodo origen, Nodo destino, double distancia) {
-        Arista arista = new Arista(origen, destino, distancia);
-        aristas.add(arista);
-        origen.agregarArista(destino, distancia);
-    }
-    
-    // Getters para obtener nodos y aristas del grafo
-    public List<Nodo> getNodos() {
-        return nodos;
-    }
-    
-    public List<Arista> getAristas() {
-        return aristas;
-    }
-}
-
-// Clase principal que contiene la lógica del sistema
+// Clase que representa un sistema de gestión de rutas
 public class SistemaGestionRutas {
     private Grafo grafo;
     
@@ -157,8 +30,9 @@ public class SistemaGestionRutas {
     
     // Método para buscar un nodo en el grafo por su ubicación
     private Nodo buscarNodoPorUbicacion(Ubicacion ubicacion) {
+        String nombreUbicacion = ubicacion.getNombre().toLowerCase(); // Convertir a minúsculas
         for (Nodo nodo : grafo.getNodos()) {
-            if (nodo.getUbicacion().equals(ubicacion)) {
+            if (nodo.getUbicacion().getNombre().toLowerCase().equals(nombreUbicacion)) { // Convertir a minúsculas
                 return nodo;
             }
         }
@@ -299,18 +173,54 @@ public class SistemaGestionRutas {
     public static void main(String[] args) {
         // Ejemplo de uso del sistema
         SistemaGestionRutas sistema = new SistemaGestionRutas();
+        Scanner scanner = new Scanner(System.in);
+
+        // Solicitar al usuario que agregue ubicaciones
+        System.out.println("Agregar ubicaciones:");
+        while (true) {
+            System.out.println("Ingrese el nombre de la ubicación (o 'fin' para terminar):");
+            String nombre = scanner.nextLine();
+            if (nombre.equalsIgnoreCase("fin")) {
+                break;
+            }
+            System.out.println("Ingrese la latitud de la ubicación:");
+            double latitud = Double.parseDouble(scanner.nextLine());
+            System.out.println("Ingrese la longitud de la ubicación:");
+            double longitud = Double.parseDouble(scanner.nextLine());
+            Ubicacion ubicacion = new Ubicacion(nombre, latitud, longitud);
+            sistema.agregarUbicacion(ubicacion);
+        }
+
+        // Solicitar al usuario que agregue conexiones entre ubicaciones
+        System.out.println("Agregar conexiones entre ubicaciones:");
+        while (true) {
+            System.out.println("Ingrese el nombre de la ubicación de origen (o 'fin' para terminar):");
+            String nombreOrigen = scanner.nextLine();
+            if (nombreOrigen.equalsIgnoreCase("fin")) {
+                break;
+            }
+            System.out.println("Ingrese el nombre de la ubicación de destino:");
+            String nombreDestino = scanner.nextLine().toLowerCase();
+            System.out.println("Ingrese la distancia entre las ubicaciones:");
+            double distancia = Double.parseDouble(scanner.nextLine());
+            
+            Ubicacion origen = new Ubicacion(nombreOrigen, 0.0, 0.0);
+            Ubicacion destino = new Ubicacion(nombreDestino, 0.0, 0.0);
+            
+            sistema.agregarConexion(origen, destino, distancia);
+        }
+
+        // Solicitar al usuario los nodos de origen y destino para calcular la ruta más corta
+        System.out.println("Ingrese el nombre de la ubicación de origen para calcular la ruta más corta:");
+        String nombreOrigen = scanner.nextLine();
+        System.out.println("Ingrese el nombre de la ubicación de destino para calcular la ruta más corta:");
+        String nombreDestino = scanner.nextLine();
         
-        // Agregar ubicaciones
-        Ubicacion ubicacionA = new Ubicacion("A", 0.0, 0.0);
-        Ubicacion ubicacionB = new Ubicacion("B", 1.0, 1.0);
-        sistema.agregarUbicacion(ubicacionA);
-        sistema.agregarUbicacion(ubicacionB);
+        Ubicacion ubicacionOrigen = new Ubicacion(nombreOrigen, 0.0, 0.0);
+        Ubicacion ubicacionDestino = new Ubicacion(nombreDestino, 0.0, 0.0);
         
-        // Agregar conexión entre ubicaciones
-        sistema.agregarConexion(ubicacionA, ubicacionB, 10.0);
-        
-        // Ejemplo de cálculo de ruta más corta usando Dijkstra
-        List<Nodo> rutaCorta = sistema.calcularRutaMasCorta(ubicacionA, ubicacionB);
+        //cálculo de ruta más corta usando Dijkstra
+        List<Nodo> rutaCorta = sistema.calcularRutaMasCorta(ubicacionOrigen, ubicacionDestino);
         System.out.println("Ruta más corta usando Dijkstra:");
         if (rutaCorta != null) {
             for (Nodo nodo : rutaCorta) {
@@ -318,18 +228,19 @@ public class SistemaGestionRutas {
             }
         }
 
-        // Ejemplo de cálculo de árbol de expansión mínima usando Prim
+        // cálculo de árbol de expansión mínima usando Prim
         List<Arista> arbolPrim = sistema.encontrarArbolExpansionMinimaPrim();
         System.out.println("\nÁrbol de expansión mínima usando Prim:");
         for (Arista arista : arbolPrim) {
             System.out.println(arista.getOrigen().getUbicacion().getNombre() + " - " + arista.getDestino().getUbicacion().getNombre());
         }
 
-        // Ejemplo de cálculo de árbol de expansión mínima usando Kruskal
+        // cálculo de árbol de expansión mínima usando Kruskal
         List<Arista> arbolKruskal = sistema.encontrarArbolExpansionMinimaKruskal();
         System.out.println("\nÁrbol de expansión mínima usando Kruskal:");
         for (Arista arista : arbolKruskal) {
             System.out.println(arista.getOrigen().getUbicacion().getNombre() + " - " + arista.getDestino().getUbicacion().getNombre());
         }
+        scanner.close();
     }
 }
